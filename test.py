@@ -50,7 +50,7 @@ class NeuralNet:
         # Getting probabilities by using the softmax function
         probs = softmax(a)  # TODO:currently softmaxing all outputs: try softmaxing only the actions(a[:2])
         for i in range(len(probs[:3])):
-            if probs[i] > 1/4:
+            if probs[i] > 0.01:
                 probs[i] = 1
             else:
                 probs[i] = 0
