@@ -50,9 +50,7 @@ class NeuralNet:
         # Getting probabilities by using the softmax function
         probs = softmax(a)  # TODO:currently softmaxing all outputs: try softmaxing only the actions(a[:2])
         for i in range(len(probs[:3])):
-            if probs[i] > 0.01:
-                probs[i] = 1
-            else:
+            if probs[i] < 0.01:
                 probs[i] = 0
         self.actions.append(probs[:3])
         return probs[:3], probs
@@ -70,7 +68,7 @@ class NeuralNet:
         for i_episode in range(1):
             observation = env.reset()
             recurr = np.zeros(self.n_units[-1])
-            for t in range(1000):
+            for t in range(10000):
                 if render_env is True:
                     env.render()
                 input = np.concatenate((observation, recurr))
@@ -97,8 +95,9 @@ class NeuralNet:
 recurrent = 4
 shape = (12, 16, 3)
 architecture = (shape[0]+shape[2]+recurrent, shape[1], shape[2]+recurrent)
-net = NeuralNet(architecture)
-net.evaluate(1,200,True,False)
+for i in range(10):
+    net = NeuralNet(architecture)
+    net.evaluate(1,200,True,False)
 prev_actions = np.array(net.actions)
 env = gym.make('SlimeVolley-v0')
 observation = env.reset()
