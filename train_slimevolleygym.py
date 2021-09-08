@@ -50,6 +50,9 @@ class NeuralNet:
             a = relu(np.dot(a, weights[i]) + biases[i])
         # Getting probabilities by using the softmax function
         probs = softmax(a)  # TODO:currently softmaxing all outputs: try softmaxing only the actions(a[:2])
+        for i in range(len(probs[:3])):
+            if probs[i] < 0.0001:
+                probs[i] = 0
         return probs[:3], probs
 
         # Defining the evaluation method
@@ -71,7 +74,7 @@ class NeuralNet:
                     env.render()
                 input = np.concatenate((observation, recurr))
                 action, recurr = self.act(np.array(input))
-                #print(recurr)
+
                 observation, _, done, _ = env.step(action)
                 if done:
                     rewards.append(t)
@@ -135,7 +138,7 @@ from time import time
 start_time = time()
 genetic_pop = GeneticNetworks(architecture=(12,16,3),
                                 population_size=64,
-                                generations=1,
+                                generations=5,
                                 episodes=15,
                                 mutation_variance=0.1,
                                 max_episode_length=10000,

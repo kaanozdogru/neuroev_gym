@@ -10,6 +10,7 @@ def softmax(x):
     x[x==0] = 1e-15
     return np.array(x / x.sum())
 
+
 class NeuralNet:
 
     def __init__(self, n_units=None, copy_network=None, var=0.02, episodes=50, max_episode_length=200):
@@ -20,7 +21,7 @@ class NeuralNet:
             # Initializing empty lists to hold matrices
             weights = []
             biases = []
-            self.actions = []
+
             # Populating the lists
             for i in range(len(n_units) - 1):
                 weights.append(np.random.normal(loc=0, scale=1, size=(n_units[i], n_units[i + 1])))
@@ -50,11 +51,12 @@ class NeuralNet:
         # Getting probabilities by using the softmax function
         probs = softmax(a)  # TODO:currently softmaxing all outputs: try softmaxing only the actions(a[:2])
         for i in range(len(probs[:3])):
-            if probs[i] < 0.01:
+            if probs[i] < 0.0001:
                 probs[i] = 0
         self.actions.append(probs[:3])
         return probs[:3], probs
 
+        # Defining the evaluation method
     def evaluate(self, episodes, max_episode_length, render_env, record):
         # Creating empty list for rewards
         rewards = []
@@ -73,13 +75,8 @@ class NeuralNet:
                     env.render()
                 input = np.concatenate((observation, recurr))
                 action, recurr = self.act(np.array(input))
-                print(action)
-                print(type(action))
-                print(min(action))
-                if min(action) != 0:
-                    print('not zero')
-                observation, _, done, _ = env.step(action)
 
+                observation, _, done, _ = env.step(action)
                 if done:
                     rewards.append(t)
                     break
