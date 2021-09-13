@@ -44,6 +44,19 @@ class NeuralNet:
         weights = self.params['weights']
         biases = self.params['biases']
         # First propagating inputs
+        a = np.tanh(np.dot(X, weights[0]) + biases[0])
+        # Now propagating through every other layer
+        for i in range(1, len(weights)):
+            a = np.tanh(np.dot(a, weights[i]) + biases[i])
+        # Getting probabilities by using the softmax function
+        probs = a
+        return probs[:3], probs
+
+    def predict(self, X):
+        # Grabbing weights and biases
+        weights = self.params['weights']
+        biases = self.params['biases']
+        # First propagating inputs
         a = relu(np.dot(X, weights[0]) + biases[0])
         # Now propagating through every other layer
         for i in range(1, len(weights)):
@@ -73,7 +86,7 @@ class NeuralNet:
                 if render_env is True:
                     env.render()
                 input = np.concatenate((observation, recurr))
-                action, recurr = self.act(np.array(input))
+                action, recurr = self.act(input)
 
                 observation, _, done, _ = env.step(action)
                 if done:
@@ -129,6 +142,29 @@ class GeneticNetworks():
             # Returning the best network
             self.best_network = self.networks[best_network]
 
+    def fit2(self):
+        # Iterating over all generations
+        for i in range(self.generations):
+            # Doing our evaluations
+            rewards = np.array(
+                [x.evaluate(self.episodes, self.max_episode_length, self.render_env, self.record) for x in
+                    self.networks])
+            # Tracking best score per generation
+            self.fitness.append(np.max(rewards))
+            # Selecting the best network
+            best_network = np.argmax(rewards)
+            # Creating our child networks
+            new_networks = [NeuralNet(copy_network=self.networks[best_network], var=self.mutation_variance,
+                                        max_episode_length=self.max_episode_length) for _ in
+                            range(self.population_size - 1)]
+            # Setting our new networks
+            self.networks = [self.networks[best_network]] + new_networks
+            # Printing output if necessary
+            if self.verbose is True and (i % self.print_every == 0 or i == 0):
+                print('Generation:', i + 1, '| Highest Reward:', rewards.max().round(1), '| Average Reward:',
+                        rewards.mean().round(1))
+            # Returning the best network
+            self.best_network = self.networks[best_network]
 
         self.best_network.evaluate(self.episodes, self.max_episode_length, True, self.record)
 
@@ -138,7 +174,7 @@ from time import time
 start_time = time()
 genetic_pop = GeneticNetworks(architecture=(12,16,3),
                                 population_size=64,
-                                generations=5,
+                                generations=10,
                                 episodes=15,
                                 mutation_variance=0.1,
                                 max_episode_length=10000,
@@ -147,6 +183,7 @@ genetic_pop = GeneticNetworks(architecture=(12,16,3),
 
 
 genetic_pop.fit()
+genetic_pop.fit2()
 print('Finished in',round(time()-start_time,3),'seconds')
 
 

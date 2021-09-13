@@ -55,12 +55,12 @@ class NeuralNet:
         weights = self.params['weights']
         biases = self.params['biases']
         # First propagating inputs
-        a = relu(np.matmul(X,weights[0]) + biases[0])
+        a = np.tanh(np.matmul(X,weights[0]) + biases[0])
         # Now propagating through every other layer
         for i in range(1, len(weights)):
-            a = relu(np.matmul(a,weights[i]) + biases[i])
+            a = np.tanh(np.matmul(a,weights[i]) + biases[i])
         # Getting probabilities by using the softmax function
-        probs = softmax(a) #TODO:currently softmaxing all outputs: try softmaxing only the actions(a[:2])
+        probs = a #TODO:currently softmaxing all outputs: try softmaxing only the actions(a[:2])
         print(probs[:2])
         return np.argmax(probs[:2]), probs
 

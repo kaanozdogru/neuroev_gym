@@ -39,6 +39,7 @@ class NeuralNet:
                                      self.params['biases']]
 
     def act(self, X):
+        X = np.concatenate((X, self.recurr))
         # Grabbing weights and biases
         weights = self.params['weights']
         biases = self.params['biases']
@@ -49,7 +50,8 @@ class NeuralNet:
             a = relu(np.matmul(a, weights[i]) + biases[i])
         # Getting probabilities by using the softmax function
         probs = softmax(a)  # TODO:currently softmaxing all outputs: try softmaxing only the actions(a[:2])
-        return np.argmax(probs[:2]), probs
+        self.recurr = probs
+        return np.argmax(probs[:2])
 
         # Defining the evaluation method
     def evaluate(self, episodes, max_episode_length, render_env, record):
@@ -64,12 +66,11 @@ class NeuralNet:
         env._max_episode_steps = 1e20
         for i_episode in range(episodes):
             observation = env.reset()
-            recurr = np.zeros(self.n_units[-1])
+            self.recurr = np.zeros(self.n_units[-1])
             for t in range(max_episode_length):
                 if render_env is True:
                     env.render()
-                input = np.concatenate((observation, recurr))
-                action, recurr = self.act(np.array(input))
+                action = self.act(np.array(observation))
                 #print(recurr)
                 observation, _, done, _ = env.step(action) #TODO:env.step takes an array of size 2 but self.act returns 6 but
                 if done:
